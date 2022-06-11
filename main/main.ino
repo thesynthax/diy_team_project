@@ -10,9 +10,9 @@ int GetDistance();
 int GetCurrentState();
 
 //RGB Light
-const int rPin = 2;
-const int gPin = 4;
-const int bPin = 5;
+const int rPin = 9;
+const int gPin = 10;
+const int bPin = 11;
 int lightType = 0; //0-off, 1-white, 2-r, 3-g, 4-b
 void LightDueToWalk(int);
 void LightDueToClap(int);
