@@ -1,11 +1,11 @@
 //HC-SR04 (ultrasonic sensor)
 const int trigPin = 3;
 const int echoPin = 7;
+const float soundSpeed = 0.034; //unit: cm/us
+const float avgWalkingSpeed = 1.3; //unit: m/s
 long duration;
 int distance;
 int currentState = 0; //0: neutral, 1: enter, 2: exit
-float soundSpeed = 0.034; //unit: cm/us
-float avgWalkingSpeed = 1.3; //unit: m/s
 int GetDistance();
 int GetCurrentState();
 
@@ -13,16 +13,22 @@ int GetCurrentState();
 const int rPin = 2;
 const int gPin = 4;
 const int bPin = 5;
-bool lightOn = false;
+int lightType = 0; //0-off, 1-white, 2-r, 3-g, 4-b
 void LightDueToWalk(int);
+void LightDueToClap(int);
 void RGBLight(int, int, int);
-void LightColor(int);
+void AssignLight(int);
 
 //Sound Sensor
-const int soundPin = 8;
+const int soundPin = A1;
 const int clapWindowMin = 250; //unit: us
-const int clapWindowMax = 500; //unit: us
+const int clapWindowMax = 750; //unit: us
 const int timeout = 1000; //unit: us
+int lastSound;
+int sound;
+long lastClapTime = 0;
+long currentClapTime = 0;
+long lastLightChange = 0;
 int ClapType();
 
 void setup()
@@ -46,7 +52,8 @@ void loop()
     currentState = GetCurrentState();   
 
     LightDueToWalk(currentState);
-    LightColor(ClapType());
+    LightDueToClap(ClapType());
+    AssignLight(lightType);
 }
 
 int GetDistance()
@@ -88,61 +95,98 @@ void LightDueToWalk(int curState)
 {
     if (curState == 1)
     {
-        RGBLight(255, 255, 255);
-        lightOn = true;
+        lightType = 1;
     }
     else
     {
-        RGBLight(0, 0, 0);
-        lightOn = false;
+        lightType = 0;
     }
 }
+
+// int ClapType()
+// {
+//     int claps = 0;
+//     int duration1 = 0, duration2 = 0;
+
+//     sound = digitalRead(soundPin);
+//     if (sound == 1)
+//     {
+//         claps++;
+//         duration1 = pulseIn(soundPin, LOW, timeout);
+//         if (duration1 > clapWindowMin && duration1 < clapWindowMax)
+//         {
+//             claps++;
+//             duration2 = pulseIn(soundPin, LOW, timeout);
+//             if (duration2 > clapWindowMin && duration2 < clapWindowMax)
+//             {
+//                 claps++;
+//             }
+//         }
+//     }
+//     return claps;
+// }
 
 int ClapType()
 {
-    int noOfClaps = 0;
-    int duration1 = 0, duration2 = 0, duration3 = 0;
+    int claps = 0;
+    sound = digitalRead(soundPin);
+    currentClapTime = millis();
 
-    int sound = digitalRead(soundPin);
-    if (sound == 1)
-    {
-        noOfClaps++;
-        duration1 = pulseIn(soundPin, LOW, timeout);
-        if (duration1 > clapWindowMin && duration1 < clapWindowMax)
-        {
-            noOfClaps++;
-            duration2 = pulseIn(soundPin, LOW, timeout);
-            if (duration2 > clapWindowMin && duration2 < clapWindowMax)
-            {
-                noOfClaps++;
-                duration3 = pulseIn(soundPin, LOW, timeout);
-                if (duration3 > clapWindowMin && duration3 < clapWindowMax)
-                {
-                    noOfClaps++;
-                }
-            }
+    if (sound == 1) 
+    { 
+        if ((currentClapTime > lastClapTime + clapWindowMin) && (lastSound == 0) && (currentClapTime < lastClapTime + clapWindowMax) && (currentClapTime > lastLightChange + timeout)) 
+        { 
+            claps = 2;
+            lastLightChange = currentNoiseTime;
         }
+        else
+            claps = 1;        
+        lastNoiseTime = currentNoiseTime;
     }
-    return noOfClaps;
+    lastSound = sound;
+    
+    return claps;
 }
 
-void LightColor(int claps)
+void LightDueToClap(int claps)
 {
-    if (lightOn)
+    if (claps == 1)
     {
-        switch(claps)
-        {
-            case(1):
-                RGBLight(255, 0, 0);
-                break;
-            case(2):
-                RGBLight(0, 255, 0);
-                break;
-            case(3):
-                RGBLight(0, 0, 255);  
-                break;
-        }
+        lightType = (lightType == 0) ? 1 ; 0;  
     }
+    else if (claps == 2)
+    {
+        if (lightType >= 1 && lightType < 4)
+        {
+            lightType++;
+        }
+        else if (lightType == 4)
+        {
+            lightType = 1;
+        }
+    }    
+}
+
+void AssignLight(int lightType)
+{
+    switch(lightType)
+    {
+        case(0):
+            RGBLight(0, 0, 0);
+            break;  
+        case(1):
+            RGBLight(255, 255, 255);
+            break;  
+        case(2):
+            RGBLight(255, 0, 0);
+            break;  
+        case(3):
+            RGBLight(0, 255, 0);
+            break;  
+        case(4):
+            RGBLight(0, 0, 255);
+            break;       
+    }  
 }
 
 void RGBLight(int r, int g, int b)
