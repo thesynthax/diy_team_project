@@ -69,6 +69,8 @@ void loop()
     LightDueToWalk(currentState);
     LightDueToClap(ClapType());
     AssignLight(lightType);
+     
+    Relay();
 
     Serial.println(sound);
 }
