@@ -68,11 +68,13 @@ void loop()
     
     LightDueToWalk(currentState);
     LightDueToClap(ClapType());
+    delay(50);
     AssignLight(lightType);
      
     Relay();
 
     Serial.println(sound);
+
 }
 
 int GetDistance()
@@ -92,8 +94,11 @@ int GetCurrentState()
     int curState;
 
     distance1 = GetDistance();
-    delay(timeToWait);
-    distance2 = GetDistance();;
+    if (currentState != 0)
+    {
+        delay(timeToWait);
+    }
+    distance2 = GetDistance();
 
     double speed = (distance1 - distance2) / (timeToWait/1000); //unit: cm/s
 
