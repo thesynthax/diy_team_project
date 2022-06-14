@@ -108,10 +108,12 @@ int GetCurrentState()
 
     if (speed < -minWalkingSpeed)
     {     
+        people -= 1;
         curState = 2;
     }
     else if (speed > minWalkingSpeed)
     {
+    	people += 1
         curState = 1;
     }
     else
@@ -122,14 +124,16 @@ int GetCurrentState()
 
 void LightDueToWalk(int curState)
 {
-    if (curState == 1)
+    if (people >= 1)
     {
         lightType = 1;       
     }
-    else if (curState == 2)
+    else if (people == 0)
     {
         lightType = 0;
     }
+
+    if (people < 0) people = 0;
 }
 
 // int ClapType()
