@@ -179,6 +179,7 @@ void LightDueToWalk(int curState)
 
 bool Clap()
 {
+    Serial.println(analogRead(soundPin));
     return (analogRead(soundPin) > clapThreshold);
 }
 
@@ -186,7 +187,6 @@ void LightDueToClap(bool clap)
 {
     if (clap)
     {
-        Serial.println(lightType);
         lightType = (lightType != 4) ? lightType + 1 : 0;  
     } 
 }
