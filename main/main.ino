@@ -113,7 +113,7 @@ int GetCurrentState()
     }
     else if (speed > minWalkingSpeed)
     {
-    	people += 1
+    	people += 1;
         curState = 1;
     }
     else
@@ -203,16 +203,16 @@ void AssignLight(int lightType)
             RGBLight(0, 0, 0);
             break;  
         case(1):
-            RGBLight(20, 25, 25);
+            RGBLight(60, 60, 60);
             break;  
         case(2):
-            RGBLight(25, 0, 0);
+            RGBLight(100, 0, 0);
             break;  
         case(3):
-            RGBLight(0, 25, 0);
+            RGBLight(0, 100, 0);
             break;  
         case(4):
-            RGBLight(0, 0, 25);
+            RGBLight(0, 0, 100);
             break;       
     }  
 }
