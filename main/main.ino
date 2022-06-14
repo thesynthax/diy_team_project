@@ -2,13 +2,14 @@
 const int trigPin = 3;
 const int echoPin = 7;
 const float soundSpeed = 0.034; //unit: cm/us
-const float avgWalkingSpeed = 130; //unit: cm/s
+const float minWalkingSpeed = 120; //unit: cm/s
 const float timeToWait = 100; //unit: ms
 const float lightChangeWindow = 2000; //unit: ms
 long duration;
 int distance;
 int distance1 = 0, distance2 = 0;
 int currentState = 0; //0: neutral, 1: enter, 2: exit
+int people = 0;
 int GetDistance();
 int GetCurrentState();
 
@@ -28,18 +29,21 @@ const int soundPin = A1;
 const int clapWindowMin = 250; //unit: us
 const int clapWindowMax = 750; //unit: us
 const int timeout = 1000; //unit: us
+const int clapThreshold = 50;
+bool clapped = false;
 int lastSound;
 int sound;
 long lastClapTime = 0;
 long currentClapTime = 0;
 long lastLightChange = 0;
-int ClapType();
+bool Clap();
 
 //Relay
 const int fan = 3;
 const int bulb = 5;
 const int charger = 4;
 const int bell = 6;
+void Relay();
 
 void setup()
 {
@@ -67,14 +71,14 @@ void loop()
     currentState = GetCurrentState();   
     
     LightDueToWalk(currentState);
-    LightDueToClap(ClapType());
-    delay(50);
+
+    clapped = Clap();
+    LightDueToClap(clapped);
+    delay(5);
     AssignLight(lightType);
-     
     Relay();
 
-    Serial.println(sound);
-
+    
 }
 
 int GetDistance()
@@ -92,7 +96,7 @@ int GetDistance()
 int GetCurrentState()
 {
     int curState;
-
+    
     distance1 = GetDistance();
     if (currentState != 0)
     {
@@ -102,11 +106,11 @@ int GetCurrentState()
 
     double speed = (distance1 - distance2) / (timeToWait/1000); //unit: cm/s
 
-    if (speed < -avgWalkingSpeed)
-    {
+    if (speed < -minWalkingSpeed)
+    {     
         curState = 2;
     }
-    else if (speed > avgWalkingSpeed)
+    else if (speed > minWalkingSpeed)
     {
         curState = 1;
     }
@@ -151,45 +155,40 @@ void LightDueToWalk(int curState)
 //     return claps;
 // }
 
-int ClapType()
-{
-    int claps = 0;
-    sound = analogRead(soundPin);
-    currentClapTime = millis();
+// int ClapType()
+// {
+//     int claps = 0;
+//     sound = analogRead(soundPin);
+//     currentClapTime = millis();
 
-    if (sound > 600) 
-    { 
-        if ((currentClapTime > lastClapTime + clapWindowMin) && (lastSound == 0) && (currentClapTime < lastClapTime + clapWindowMax) && (currentClapTime > lastLightChange + timeout)) 
-        { 
-            claps = 2;
-            lastLightChange = currentClapTime;
-        }
-        else
-            claps = 1;        
-        lastClapTime = currentClapTime;
-    }
-    lastSound = sound;
+//     if (sound > 600) 
+//     { 
+//         if ((currentClapTime > lastClapTime + clapWindowMin) && (lastSound == 0) && (currentClapTime < lastClapTime + clapWindowMax) && (currentClapTime > lastLightChange + timeout)) 
+//         { 
+//             claps = 2;
+//             lastLightChange = currentClapTime;
+//         }
+//         else
+//             claps = 1;        
+//         lastClapTime = currentClapTime;
+//     }
+//     lastSound = sound;
     
-    return claps;
+//     return claps;
+// }
+
+bool Clap()
+{
+    return (analogRead(soundPin) > clapThreshold);
 }
 
-void LightDueToClap(int claps)
+void LightDueToClap(bool clap)
 {
-    if (claps == 1)
+    if (clap)
     {
-        lightType = (lightType == 0) ? 1 : 0;  
-    }
-    else if (claps == 2)
-    {
-        if (lightType >= 1 && lightType < 4)
-        {
-            lightType++;
-        }
-        else if (lightType == 4)
-        {
-            lightType = 1;
-        }
-    }    
+        Serial.println(lightType);
+        lightType = (lightType != 4) ? lightType + 1 : 0;  
+    } 
 }
 
 void AssignLight(int lightType)
@@ -224,7 +223,7 @@ void RGBLight(int r, int g, int b)
 
 void Relay()
 {
-    if(Serial.available() == 1)
+    if (Serial.available() == 1)
     {
         String val = Serial.readString();
         //Serial.println(val);
@@ -265,7 +264,6 @@ void Relay()
             digitalWrite(bell, LOW);
         }
         //for everything
-        
         if (val == "all on")
         {
             digitalWrite(fan, HIGH);
