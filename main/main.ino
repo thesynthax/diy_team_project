@@ -203,16 +203,16 @@ void AssignLight(int lightType)
             RGBLight(0, 0, 0);
             break;  
         case(1):
-            RGBLight(200, 255, 255);
+            RGBLight(20, 25, 25);
             break;  
         case(2):
-            RGBLight(255, 0, 0);
+            RGBLight(25, 0, 0);
             break;  
         case(3):
-            RGBLight(0, 255, 0);
+            RGBLight(0, 25, 0);
             break;  
         case(4):
-            RGBLight(0, 0, 255);
+            RGBLight(0, 0, 25);
             break;       
     }  
 }
