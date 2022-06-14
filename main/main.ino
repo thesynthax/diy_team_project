@@ -2,7 +2,7 @@
 const int trigPin = 3;
 const int echoPin = 7;
 const float soundSpeed = 0.034; //unit: cm/us
-const float minWalkingSpeed = 120; //unit: cm/s
+const float minWalkingSpeed = 50; //unit: cm/s
 const float timeToWait = 100; //unit: ms
 const float lightChangeWindow = 2000; //unit: ms
 long duration;
