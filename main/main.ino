@@ -74,7 +74,7 @@ void loop()
 
     clapped = Clap();
     LightDueToClap(clapped);
-    delay(5);
+    delay(25);
     AssignLight(lightType);
     Relay();
 
